@@ -1,4 +1,4 @@
-# import ImageView
+include("utils.jl")
 
 module MNIST
     IMAGES_MAGIC = 0x00000803
@@ -42,25 +42,34 @@ module MNIST
 
     module test
         import MNIST
+        import Utils
         DEFAULT_TEST_IMAGES_PATH = "data/t10k-images-idx3-ubyte"
         DEFAULT_TEST_LABELS_PATH = "data/t10k-labels-idx1-ubyte"
 
         images() = MNIST.read_images_file(DEFAULT_TEST_IMAGES_PATH)
-        labels() = MNIST.read_labels_file(DEFAULT_TEST_LABELS_PATH)
+        function labels(;one_hot=false)
+            labels = MNIST.read_labels_file(DEFAULT_TEST_LABELS_PATH)
+            one_hot ? Utils.one_hot(labels) : labels
+        end
     end
 
     module train
         import MNIST
+        import Utils
         DEFAULT_TRAIN_IMAGES_PATH = "data/train-images-idx3-ubyte"
         DEFAULT_TRAIN_LABELS_PATH = "data/train-labels-idx1-ubyte"
 
         images() = MNIST.read_images_file(DEFAULT_TRAIN_IMAGES_PATH)
-        labels() = MNIST.read_labels_file(DEFAULT_TRAIN_LABELS_PATH)
+        function labels(;one_hot=false)
+            labels = MNIST.read_labels_file(DEFAULT_TRAIN_LABELS_PATH)
+            one_hot ? Utils.one_hot(labels) : labels
+        end
     end
 end
 
 i = MNIST.test.images()
-
+MNIST.train.labels(one_hot=true)
+# l = MNIST.test.labels(one_hot=true)
 # get_images
 # get_labels
 
