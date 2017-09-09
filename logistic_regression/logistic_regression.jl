@@ -12,10 +12,11 @@ MAX_TEST = 200
 # para calcular el gradiantes hay que obtener la derivada de cross entropy
 # y aplicarlo a los pesos iniciales y cambiarlos
 
-train_images, train_labels = MNIST.test.images(), MNIST.test.labels()
-test_images, test_labels = MNIST.test.images(), MNIST.test.labels()
+X = [1 0 1; 0 1 0; 1 1 0; 0 0 1]
+y = [1; 0; 0; 1]
+θ = zeros(size(X)[2], 1)
 
-train_images = train_images[1:MAX_TRAIN,:]
-train_labels = train_labels[1:MAX_TRAIN,:]
-test_images = test_images[1:MAX_TEST,:]
-test_labels = test_labels[1:MAX_TEST,:]
+Utils.minimize_stochastic(
+    Utils.logistic_regression.error,
+    Utils.logistic_regression.gradient,
+    X, y, θ; alpha_0=0.1) |> print

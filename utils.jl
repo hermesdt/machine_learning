@@ -91,13 +91,6 @@ end
 
 end
 
-X = [0 1 0; 0 2 0; 1 1 0; 0 0 3]
-y = [0 2 0; 0 4 0; 1 2 0; 0 0 9]
-# θ = [0 0 0]
-
-error_fn(X, y, θ) = mean((y .- (X .* θ)) .^ 2)
-gradient_fn(X, y, θ) = -2 * sum(y .- (X .* θ), 1)
-
 # α = 0.01
 # println("theta: $θ")
 # println("error: $(error_fn(X, y, θ))")
@@ -106,23 +99,23 @@ gradient_fn(X, y, θ) = -2 * sum(y .- (X .* θ), 1)
 # θ = θ - g*α
 # println("new θ: $θ")
 
-X = [1 0 1; 0 1 0; 1 1 0; 0 0 1]
-y = [1; 0; 0; 1]
-θ = zeros(size(X)[2], 1)
-
-Utils.minimize_stochastic(
-    Utils.logistic_regression.error,
-    Utils.logistic_regression.gradient,
-    X, y, θ; alpha_0=0.1) |> print
-
-X = [0 1 0; 0 2 0; 1 1 0; 0 0 3]
-y = [0 2 0; 0 4 0; 1 2 0; 0 0 9]
-θ = [0 0 0]
-
-Utils.minimize_stochastic(
-    Utils.linear_regression.error,
-    Utils.linear_regression.gradient,
-    X, y, θ; alpha_0=0.01) |> print
+# X = [1 0 1; 0 1 0; 1 1 0; 0 0 1]
+# y = [1; 0; 0; 1]
+# θ = zeros(size(X)[2], 1)
+#
+# Utils.minimize_stochastic(
+#     Utils.logistic_regression.error,
+#     Utils.logistic_regression.gradient,
+#     X, y, θ; alpha_0=0.1) |> print
+#
+# X = [0 1 0; 0 2 0; 1 1 0; 0 0 3]
+# y = [0 2 0; 0 4 0; 1 2 0; 0 0 9]
+# θ = [0 0 0]
+#
+# Utils.minimize_stochastic(
+#     Utils.linear_regression.error,
+#     Utils.linear_regression.gradient,
+#     X, y, θ; alpha_0=0.01) |> print
 
 # Utils.minimize_stochastic()
 
