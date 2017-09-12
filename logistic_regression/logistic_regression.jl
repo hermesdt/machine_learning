@@ -1,8 +1,36 @@
 include("../mnist.jl")
 include("../utils.jl")
 
-MAX_TRAIN = 5000
+MAX_TRAIN = 1000
 MAX_TEST = 200
+
+train_images, train_labels = MNIST.train.images(;center=true)[1:MAX_TRAIN,:], MNIST.train.labels()[1:MAX_TRAIN,:]
+test_images, test_labels = MNIST.test.images(;center=true)[1:MAX_TEST,:], MNIST.test.labels()[1:MAX_TEST,:]
+
+intercept = ones(size(train_images)[1])
+train_images = hcat(train_images, intercept)
+intercept = ones(size(test_images)[1])
+test_images = hcat(test_images, intercept)
+
+thetas = Dict()
+for digit in sort(unique(train_labels))
+    X = train_images
+    y = Utils.convert_y_to_binary(train_labels, digit)
+    y_test = Utils.convert_y_to_binary(test_labels, digit)
+    θ = ones(size(train_images)[2])
+
+    thetas[digit] = Utils.maximize_stochastic(
+        Utils.logistic_regression.error,
+        Utils.logistic_regression.gradient,
+        X,
+        y,
+        θ; alpha_0 = 0.000001
+    )
+end
+
+test_labels[1]
+
+
 
 # saber hacer softmax
 # softmax calcula las probabilidades de cada clase
@@ -11,34 +39,3 @@ MAX_TEST = 200
 #
 # para calcular el gradiantes hay que obtener la derivada de cross entropy
 # y aplicarlo a los pesos iniciales y cambiarlos
-
-X = [1 0 1; 0 1 0; 1 1 0; 0 0 1]
-y = [1; 0; 0; 1]
-θ = zeros(size(X)[2], 1)
-
-# θ = Utils.minimize_stochastic(
-#     Utils.logistic_regression.error,
-#     Utils.logistic_regression.gradient,
-#     X, y, θ; alpha_0=0.1)
-
-
-error = Utils.logistic_regression.error(X, y, θ)
-gradient = Utils.logistic_regression.gradient(X, y, θ)
-println("error: $error")
-println("gradient: $gradient")
-for i in 1:1000
-    gradient = Utils.logistic_regression.gradient(X, y, θ)
-    θ = θ - 0.01 * gradient
-end
-
-error = Utils.logistic_regression.error(X, y, θ)
-sigmoid = Utils.sigmoid(X, θ)
-
-println("theta: $θ")
-println("error: $error")
-println("sigmoid: $sigmoid")
-
-predicted = Utils.sigmoid(X, θ)
-predicted[predicted .>= 0.5] = 1
-predicted[predicted .< 0.5] = 0
-# println("accuracy: $(Utils.accuracy(predicted, y))")

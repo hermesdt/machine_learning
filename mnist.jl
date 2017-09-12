@@ -11,9 +11,9 @@ module MNIST
         end
     end
 
-    function read_images_file(images_file)
+    function read_images_file(images_file; scale=false, center=false)
         read_header!(io) = map(_ -> Int(bswap(read(io, UInt32))), 1:3)
-        read_image!(io, nrows, ncols) = .~read(io, UInt8, nrows * ncols)
+        read_image!(io, nrows, ncols) = read(io, UInt8, nrows * ncols)
 
         io = open(images_file)
         read_magic!(io, IMAGES_MAGIC)
@@ -22,6 +22,12 @@ module MNIST
         images = map(_ -> read_image!(io, nrows, ncols), 1:num_images)
         images = hcat(images...)'
         close(io)
+
+        if center
+            min = minimum(images)
+            max = maximum(images)
+            images = (images .- min) ./ (max - min)
+        end
 
         images
     end
@@ -46,7 +52,9 @@ module MNIST
         DEFAULT_TEST_IMAGES_PATH = "data/t10k-images-idx3-ubyte"
         DEFAULT_TEST_LABELS_PATH = "data/t10k-labels-idx1-ubyte"
 
-        images() = MNIST.read_images_file(DEFAULT_TEST_IMAGES_PATH)
+        images(;scale=false, center=false) = MNIST.read_images_file(
+            DEFAULT_TEST_IMAGES_PATH; scale=scale, center=center)
+
         function labels(;one_hot=false)
             labels = MNIST.read_labels_file(DEFAULT_TEST_LABELS_PATH)
             one_hot ? Utils.one_hot(labels) : labels
@@ -59,7 +67,8 @@ module MNIST
         DEFAULT_TRAIN_IMAGES_PATH = "data/train-images-idx3-ubyte"
         DEFAULT_TRAIN_LABELS_PATH = "data/train-labels-idx1-ubyte"
 
-        images() = MNIST.read_images_file(DEFAULT_TRAIN_IMAGES_PATH)
+        images(;scale=false, center=false) = MNIST.read_images_file(
+            DEFAULT_TRAIN_IMAGES_PATH; scale=scale, center=center)
         function labels(;one_hot=false)
             labels = MNIST.read_labels_file(DEFAULT_TRAIN_LABELS_PATH)
             one_hot ? Utils.one_hot(labels) : labels
@@ -67,8 +76,7 @@ module MNIST
     end
 end
 
-i = MNIST.test.images()
-MNIST.train.labels(one_hot=true)
+# MNIST.train.images(;center=true)
 # l = MNIST.test.labels(one_hot=true)
 # get_images
 # get_labels

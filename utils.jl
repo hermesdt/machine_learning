@@ -9,12 +9,15 @@ module Utils
         import Utils
 
         function error(X, y, θ)
-            error = -y.*log.(Utils.sigmoid(X, θ)) .- (1 .- y).*log.(1 - Utils.sigmoid(X, θ))
-            mean(error)
+            m = length(y)
+            htheta = Utils.sigmoid(X*θ)
+            1 / m * sum(-y .* log.(htheta) - (1 - y) .* log.(1 - htheta))
         end
 
         function gradient(X, y, θ)
-            sum((Utils.sigmoid(X, θ) .- y).*X, 1)'
+            m = length(y)
+            htheta = Utils.sigmoid(X*θ)
+            1 / m * sum(X' * (y - Utils.sigmoid(X*θ)), 2)
         end
     end
 
@@ -23,8 +26,9 @@ function softmax(x)
     (e.^shiftx) / (sum(e.^shiftx))
 end
 
-function sigmoid(X, θ)
-    1 ./ (1 .+ e.^(-X*θ))
+function sigmoid(z)
+    # [i >= 0 ? ) : exp.(i) ./ (1 .+ exp.(i)) for i in z]
+    1 ./ (1 .+ exp.(-z))
 end
 
 function one_hot(x)
@@ -39,18 +43,19 @@ function accuracy(predicted, real)
     s / length(real)
 end
 
-function minimize_stochastic(error_fn, gradient_fn, X, y, theta; alpha_0=0.001)
+function minimize_stochastic(error_fn, gradient_fn, X, y, theta;
+        alpha_0=0.001, max_iterations = 1000)
     min_error = Inf
-    min_theta = 0
+    min_theta = theta
     iterations_no_improvement = 0
     alpha = alpha_0
-    max_error = 0.003
+    iterations = 0
 
-    while iterations_no_improvement < 100
+    while (iterations_no_improvement < 100) | (iterations >= max_iterations)
         error = error_fn(X, y, theta)
-        error <= max_error ? break : 1
 
         if error < min_error
+            println("error menor")
             min_error, min_theta = error, theta
             iterations_no_improvement = 0
             alpha = alpha_0
@@ -61,6 +66,7 @@ function minimize_stochastic(error_fn, gradient_fn, X, y, theta; alpha_0=0.001)
 
         g = gradient_fn(X, y, theta)
         theta = theta - alpha * g
+        iterations += 1
     end
 
     min_theta
@@ -70,8 +76,10 @@ function negate(fn)
     (args...; kwargs...) -> -fn(args...; kwargs...)
 end
 
-function maximize_stochastic(error_fn, gradient_fn, X, y, theta; alpha_0=0.001)
-    minimize_stochastic(negate(error_fn), negate(gradient_fn), X, y, θ; alpha_0=alpha_0)
+function maximize_stochastic(error_fn, gradient_fn, X, y, theta;
+    alpha_0=0.001, max_iterations=1000)
+    minimize_stochastic(negate(error_fn), negate(gradient_fn), X, y, theta;
+        alpha_0=alpha_0, max_iterations=max_iterations)
 end
 
 error_rate(predicted, real) = 1 - accuracy(predicted, real)
@@ -87,6 +95,15 @@ function count_labels(labels)
         d = merge!(d, m)
     end
     d
+end
+
+function convert_y_to_binary(y, label)
+    y = copy(y)
+    temp = maximum(y) + 1
+    y[y .== label] = temp
+    y[(y .!= label) .& (y .!= temp)] = 0
+    y[y .== temp] = 1
+    y
 end
 
 end
