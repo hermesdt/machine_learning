@@ -19,6 +19,13 @@ module Utils
             htheta = Utils.sigmoid(X*θ)
             1 / m * sum(X' * (y - Utils.sigmoid(X*θ)), 2)
         end
+
+        function predict(X, θ)
+            prediction = Utils.sigmoid(X*θ)
+            prediction[prediction .>= 0.5] = 1
+            prediction[prediction .< 0.5] = 0
+            prediction
+        end
     end
 
 function softmax(x)
@@ -44,32 +51,26 @@ function accuracy(predicted, real)
 end
 
 function minimize_stochastic(error_fn, gradient_fn, X, y, theta;
-        alpha_0=0.001, max_iterations = 1000)
-    min_error = Inf
-    min_theta = theta
-    iterations_no_improvement = 0
-    alpha = alpha_0
+        alpha=0.001, max_iterations = 100)
     iterations = 0
 
-    while (iterations_no_improvement < 100) | (iterations >= max_iterations)
+    while iterations < max_iterations
         error = error_fn(X, y, theta)
 
-        if error < min_error
-            println("error menor")
-            min_error, min_theta = error, theta
-            iterations_no_improvement = 0
-            alpha = alpha_0
-        else
-            iterations_no_improvement += 1
-            alpha *= 0.9
+        if iterations % 20 == 0
+            println("iterations: $iterations, error: $error")
         end
 
-        g = gradient_fn(X, y, theta)
-        theta = theta - alpha * g
+        for i in 1:size(X)[1]
+            theta = theta - alpha*(gradient_fn(X[i:i,:], y[i], theta))
+        end
+
+        #g = gradient_fn(X, y, theta)
+        #theta = theta - alpha * g
         iterations += 1
     end
 
-    min_theta
+    theta
 end
 
 function negate(fn)
@@ -77,9 +78,9 @@ function negate(fn)
 end
 
 function maximize_stochastic(error_fn, gradient_fn, X, y, theta;
-    alpha_0=0.001, max_iterations=1000)
-    minimize_stochastic(negate(error_fn), negate(gradient_fn), X, y, theta;
-        alpha_0=alpha_0, max_iterations=max_iterations)
+    alpha=0.01, max_iterations=100)
+    minimize_stochastic(error_fn, negate(gradient_fn), X, y, theta;
+        alpha=alpha, max_iterations=max_iterations)
 end
 
 error_rate(predicted, real) = 1 - accuracy(predicted, real)

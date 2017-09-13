@@ -24,9 +24,9 @@ module MNIST
         close(io)
 
         if center
-            min = minimum(images)
-            max = maximum(images)
-            images = (images .- min) ./ (max - min)
+            μ = mean(images)
+            σ = std(images)
+            images = (images .- μ) ./ σ
         end
 
         images
