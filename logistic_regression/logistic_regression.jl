@@ -12,53 +12,46 @@ train_images = hcat(train_images, intercept)
 intercept = ones(size(test_images)[1])
 test_images = hcat(test_images, intercept)
 
-thetas = Dict()
-predicted_temp, predicted = 0, 0
-# for digit in sort(unique(train_labels))
-for digit in [5, 1, 2, 9]
+thetas = []
+# train one logistic regression per digit
+for digit in sort(unique(train_labels))
     println("doing digit $digit")
     X = train_images
     y = Utils.convert_y_to_binary(train_labels, digit)
     θ = zeros(size(train_images)[2])
     y_test = Utils.convert_y_to_binary(test_labels, digit)
 
-    thetas[digit] = Utils.maximize_stochastic(
+    θ = Utils.maximize_stochastic(
         Utils.logistic_regression.error,
         Utils.logistic_regression.gradient,
         X,
         y,
-        θ; alpha = 0.01, max_iterations=100
+        θ; alpha = 0.01, max_iterations=50
     )
 
-    if false
-    for i in 1:100
-        for i in 1:size(X)[1]
-            θ = θ + 0.01*(Utils.logistic_regression.gradient(X[i:i,:], y[i], θ))
-        end
+    push!(thetas, θ)
 
-        error = Utils.logistic_regression.error(X, y, θ)
-    	predicted = Utils.sigmoid(test_images*θ)
-        predicted_temp = predicted
-    	predicted[predicted .>= 0.5] = 1
-    	predicted[predicted .< 0.5] = 0
-        accuracy = Utils.accuracy(predicted, y_test)
-        println("error: $error, accuracy: $accuracy")
-    end
-    thetas[digit] = θ
-    end
-
-    predicted = Utils.logistic_regression.predict(test_images, thetas[digit])
+    predicted = Utils.logistic_regression.predict(test_images, θ)
     accuracy = Utils.accuracy(predicted, y_test)
     println("digit: $digit, accuracy: $accuracy")
 end
 
 
+accuracy = 0
+sample_size = length(test_labels)
 
+for index in eachindex(test_labels)
+    x = test_images[index:index,:]
+    label = test_labels[index]
 
-# saber hacer softmax
-# softmax calcula las probabilidades de cada clase
-# cross entropy calcula el error dado el resultado de softmax
-# el error total es la suma de cada error divido por todos los elementos
-#
-# para calcular el gradiantes hay que obtener la derivada de cross entropy
-# y aplicarlo a los pesos iniciales y cambiarlos
+    predictions = [Utils.logistic_regression.predict(x, theta)[1] for theta in thetas]
+    best_prediction = indmax(predictions) - 1
+    println("predictions $predictions")
+    println("label $label, prediction $best_prediction")
+
+    if label == best_prediction
+        accuracy += 1/sample_size
+    end
+end
+
+println("accuracy: $accuracy")
