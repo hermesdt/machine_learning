@@ -1,7 +1,7 @@
 include("../mnist.jl")
 include("../utils.jl")
 
-MAX_TRAIN = 1000
+MAX_TRAIN = 100
 MAX_TEST = 100
 
 train_images, train_labels = MNIST.train.images(;center=true)[1:MAX_TRAIN,:], MNIST.train.labels()[1:MAX_TRAIN,:]
@@ -26,7 +26,7 @@ for digit in sort(unique(train_labels))
         Utils.logistic_regression.gradient,
         X,
         y,
-        θ; alpha = 0.01, max_iterations=50
+        θ; alpha = 0.001, max_iterations=50
     )
 
     push!(thetas, θ)

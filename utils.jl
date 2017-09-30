@@ -65,8 +65,6 @@ function minimize_stochastic(error_fn, gradient_fn, X, y, theta;
             theta = theta - alpha*(gradient_fn(X[i:i,:], y[i], theta))
         end
 
-        #g = gradient_fn(X, y, theta)
-        #theta = theta - alpha * g
         iterations += 1
     end
 
