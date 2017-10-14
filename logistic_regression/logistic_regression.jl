@@ -1,8 +1,8 @@
 include("../mnist.jl")
 include("../utils.jl")
 
-MAX_TRAIN = 100
-MAX_TEST = 100
+MAX_TRAIN = 200
+MAX_TEST = 200
 
 train_images, train_labels = MNIST.train.images(;center=true)[1:MAX_TRAIN,:], MNIST.train.labels()[1:MAX_TRAIN,:]
 test_images, test_labels = MNIST.test.images(;center=true)[1:MAX_TEST,:], MNIST.test.labels()[1:MAX_TEST,:]
